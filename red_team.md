@@ -2,6 +2,20 @@
 
 ## C2
 
+## Staged vs stageless handler
+
+[Great article about the subject](https://buffered.io/posts/staged-vs-stageless-handlers/)
+
+Staged :
+- Minimal size pyaload
+- Dumb stager
+- Easily detected by an IDS
+
+Stageless:
+- Larger payload
+- Fully encrypted communication
+- Less likely to get caught by an IDS
+
 ### Cobalt strike
 
 Run the team server
