@@ -21,3 +21,7 @@ TO DO
 https://buffered.io/posts/oscp-and-me/
 
 http://proactivedefender.blogspot.com/2012/01/oscp-my-review.html
+
+## OSCP related links
+
+https://buffered.io/posts/oscp-faq/
