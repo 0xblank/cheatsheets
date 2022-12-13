@@ -47,7 +47,8 @@ Double click on you beacon, a new tab opens
 
 You can now run cobalt strike commands on the machine from cobalt strike's CLI. To see all the commands use `help`. You can also use `help <command>` to get help for a specific command.
 
-You can use `exit` to kill a beacon.
+Use `run <command>` to run system commands on the machine
+Use `exit` to kill a beacon.
 
 #### HTTP beacon
 
@@ -69,6 +70,16 @@ connect <hostname or IP> <port>
 
 P2P beacons don't have their own sleep time, they inherit the one of their egress beacons. So if you want to change a P2P beacon's sleep time, just change the sleep time of his egress beacons.
 
+#### Pivot listeners
+
+A pivot listener can only be created on an existing Beacon, and not via the normal Listeners menu.  These listeners work in the same way as regular TCP listeners, but in reverse.  A standard Beacon TCP payload binds to 127.0.0.1 (or 0.0.0.0) and listens for an incoming connection on the specified port.  You then initiate a connection to it from an existing Beacon (with the `connect` command).  The pivot listener works the other way around by telling the existing Beacon to bind and listen on a port, and the new Beacon TCP payload initiates a connection to it instead.
+
+To create a pivot listener, right-click on a Beacon and select Pivoting > Listener.  This will open a "New Listener" window.
+
+Next generate you payload specifying the pivot listener as listener.
+
+The execute the payload and the new pivot beacon should appear in the GUI.
+
 #### Graph view
 
 Arrow colors:
@@ -76,6 +87,41 @@ Arrow colors:
 - Yellow: SMB
 - Green with dots: HTTP
 - Yellow with dots: DNS
+
+#### Cobalt strike server setup
+
+If you want to setup a cobalt strike server on a machine and you want it to start when the vm starts use these commands:
+
+Create a systemd unit file
+```
+$ sudo vim /etc/systemd/system/teamserver.service
+```
+
+Then pas the following content
+```
+[Unit]
+Description=Cobalt Strike Team Server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+WorkingDirectory=<path to Cobalt Strike directory>
+ExecStart=<path to teamserver binary> <machine IP> <password> <path to malleable profile>
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Next reload the systemd manager, start the service and 
+```
+$ sudo systemctl daemon-reload
+$ sudo systemctl start teamserver.service
+$ sudo systemctl enable teamserver.service
+```
 
 ### Metasploit
 
