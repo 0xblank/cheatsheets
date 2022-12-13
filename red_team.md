@@ -47,15 +47,35 @@ Double click on you beacon, a new tab opens
 
 You can now run cobalt strike commands on the machine from cobalt strike's CLI. To see all the commands use `help`. You can also use `help <command>` to get help for a specific command.
 
+You can use `exit` to kill a beacon.
+
 #### HTTP beacon
 
-A HTTP beacon will automatically send check-in messages to show Cobalt Strike server that it's still alive. It will be considered dead after 3 missed check-ins. The default delay bewtween check-ins is 60s. You can change the beacon's check-in delay by using `sleep <seconds between check-ins>`.
+A HTTP beacon will automatically send check-in messages to show Cobalt Strike server that it's still alive. It will be considered dead after 3 missed check-ins. The default delay bewtween check-ins is 60s. You can change the beacon's check-in delay by using `sleep <seconds between check-ins>`. You can set delay to 0 to enter interractive mode and have something getting close to a real shell. Use ctrl+k to clear the console
 
 > :warning: Although this is nicer for us because you don't have to sit around waiting for as long, you can appreciate how much noisier it is on the wire.  The more noise your C2 channel makes, the more likely it is to get caught.
 
 #### DNS beacon
 
 Due to the lower databand available of DNS the DNS beacon will not automatically check-in, so it will appear in the UI as "unknown" Beacon. You can use `checkin` to do manual check-in and see the metadata appear in Cobalt Strike.
+
+#### P2P beacons
+
+Unlike the egress beacons, the P2P beacons will not automatically connect back to your Cobalt Strike server. You will need to use the `connect` command for tcp or `link` command for smb and connect manually to your bacon.
+
+```
+connect <hostname or IP> <port>
+```
+
+P2P beacons don't have their own sleep time, they inherit the one of their egress beacons. So if you want to change a P2P beacon's sleep time, just change the sleep time of his egress beacons.
+
+#### Graph view
+
+Arrow colors:
+- Green: TCP
+- Yellow: SMB
+- Green with dots: HTTP
+- Yellow with dots: DNS
 
 ### Metasploit
 
