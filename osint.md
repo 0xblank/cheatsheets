@@ -62,3 +62,17 @@
 ### Yed
 
 [Download](https://www.yworks.com/products/yed)
+
+## Social media
+
+Linkedin:
+- [LinkedInt](https://github.com/vysecurity/LinkedInt)
+
+Google:
+- [GHunt](https://github.com/mxrch/GHunt)
+
+## Emails
+
+Sites or tools to get emails:
+- [hunter.io](https://hunter.io/)
+- [phonebook.cz](https://phonebook.cz/)
