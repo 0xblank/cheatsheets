@@ -16,8 +16,6 @@
 
 [https://github.com/projectdiscovery/subfinder](https://github.com/projectdiscovery/subfinder)
 
-
-
 ## Websites technologies detection
 
 [wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)
