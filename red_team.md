@@ -39,6 +39,24 @@ Create a payload:
 - Windows Stageless Payload: a pre-compiled stageless payload as an EXE, Service EXE, DLL, shellcode, as well as PowerShell.  This is also the only means of generating payloads for P2P listeners.
 - Windows Stageless Generate All Payloads: every stageless payload variant, for every listener, in x86 and x64.
 
+Create a beacon
+
+Run the beacon on the compromised machine, the beacon should now show in cobalt strike
+
+Double click on you beacon, a new tab opens
+
+You can now run cobalt strike commands on the machine from cobalt strike's CLI. To see all the commands use `help`. You can also use `help <command>` to get help for a specific command.
+
+#### HTTP beacon
+
+A HTTP beacon will automatically send check-in messages to show Cobalt Strike server that it's still alive. It will be considered dead after 3 missed check-ins. The default delay bewtween check-ins is 60s. You can change the beacon's check-in delay by using `sleep <seconds between check-ins>`.
+
+> :warning: Although this is nicer for us because you don't have to sit around waiting for as long, you can appreciate how much noisier it is on the wire.  The more noise your C2 channel makes, the more likely it is to get caught.
+
+#### DNS beacon
+
+Due to the lower databand available of DNS the DNS beacon will not automatically check-in, so it will appear in the UI as "unknown" Beacon. You can use `checkin` to do manual check-in and see the metadata appear in Cobalt Strike.
+
 ### Metasploit
 
 #### TCP Payloads
