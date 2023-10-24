@@ -9,7 +9,7 @@
 [Great article about the subject](https://buffered.io/posts/staged-vs-stageless-handlers/)
 
 Staged :
-- Minimal size pyaload
+- Minimal size payload
 - Dumb stager
 - Easily detected by an IDS
 
@@ -257,3 +257,35 @@ For HTTP/S payloads they will automatically reconnect to the listener after a lo
 You may want to use [PowerDNS](https://github.com/PowerDNS/pdns) to register a domain name. PowerDNS might also be usefull for dns exfiltration.
 
 > To get a web interface for PowerDNS you can use [PowerDNS-Admin](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
+
+##   Persistance
+
+### Windows
+
+#### Assign Group Memberships
+
+If you are domain administrator you can add a unprivileged user of the domain to a privileged group and then use this account to have persistence without using an account that is less likely to be monitored by the blue team.
+
+```powershell
+net localgroup administrators unprivileged_user /add
+```
+
+This might still look suspicious as the blue team could monitor the new domain administrators. To be more sneaky you can use other groups like "Backup Operators". Users in this group won't have administrative privileges but will be allowed to read/write any file or registry key on the system, ignoring any configured DACL. This would allow you to copy the content of the SAM and SYSTEM registry hives, which you can then use to recover the password hashes for all the users, enabling you to escalate to any administrative account.
+
+```powershell
+net localgroup "Backup Operators" unprivileged_user /add
+```
+
+You also have to add this user to the "Remote Desktop Users" group to enable him to connect via wirRM or RDP.
+
+```powershell
+net localgroup "Remote Management Users" unprivileged_user /add
+```
+
+Even if the unprivileged user now is part of privileged groups he won't have access to the machine files as expected because of the User Account Control (UAC). One of the features implemented by UAC, LocalAccountTokenFilterPolicy, strips any local account of its administrative privileges when logging in remotely. You can elevate your privileges through UAC from a graphical user session, but if you are using winRM you are confined to a limited access token with no administrative privileges.
+
+To be able to regain administration privileges from your user, you'll have to disable LocalAccountTokenFilterPolicy by changing the following registry key to 1 by using the following command (run this command from the domain administrator shell).
+
+```powerhsell
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /t REG_DWORD /v LocalAccountTokenFilterPolicy /d 1
+```
